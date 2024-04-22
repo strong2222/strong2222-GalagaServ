@@ -16,10 +16,10 @@ import javax.imageio.ImageIO;
 public class Enemy extends Character {
     
     GamePanel gp;
-    BufferedImage[] enemyImages; // Array to hold idle animation frames
-    int currentAnimationFrame; // Index of the current animation frame
-    long lastFrameChangeTime; // Time of the last frame change
-    long frameChangeDelay = 200; // Delay between frame changes in milliseconds
+    BufferedImage[] enemyImages; 
+    int currentAnimationFrame; 
+    long lastFrameChangeTime; 
+    long frameChangeDelay = 200; 
     static final int tileSize = 60;
     
     public boolean isDestroyed = false;
@@ -66,7 +66,7 @@ public class Enemy extends Character {
                 currentAnimationFrame = (currentAnimationFrame + 1) % enemyImages.length;
                 
                 lastFrameChangeTime = currentTime;
-                idleLoop();
+                
             }
            
             // Draw the current frame
@@ -96,12 +96,20 @@ public class Enemy extends Character {
 
                     i--;
                 }
-            }
+            } 
+            
 
             if(this.colition != null){
                 colition.x = x;
                 colition.y = y;
             }
+            
+            
+                
+                idleLoop();
+                
+           
+           
             
         }
     }
@@ -111,10 +119,10 @@ public class Enemy extends Character {
             if (rect.intersects(this.colition)) {
                 isDestroyed = true;
                 this.colition = null;
-                return true; // Return true only if the enemy was not previously destroyed and there's a collision
+                return true; 
             }
         }
-        return false; // Return false if there's no collision
+        return false; 
     }
    
     private void idleLoop(){
@@ -124,7 +132,7 @@ public class Enemy extends Character {
         }
     }
     
-    // Method to make the enemy shoot a bullet
+   
     public void shoot() {
         
         EnemyBullet bullet = new EnemyBullet(x + (tileSize / 2), y + (tileSize / 2),5);

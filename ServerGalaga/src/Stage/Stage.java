@@ -23,8 +23,8 @@ public class Stage{
    public List<Enemy> enemies;
     GamePanel gp;
     public List<Bullet> bullets;
-    Player player;
-    Player play;
+    Player player1;
+    Player player2;
     private boolean lastFireState = false;
     Key keyHandler;
     
@@ -37,100 +37,42 @@ public class Stage{
     
      BufferedImage bulletImage;
      static final int tileSize = 60;
-     int currentAttackerIndex=0;
-   
     
-    public Stage(Player player, GamePanel gp,Key KeyHandler) {
+    public Stage(GamePanel gp) {
    
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
         
-        this.player = player;
+        this.player1 = player1;
+        this.player2 = player2;
         this.gp = gp;
      
-        this.keyHandler = KeyHandler;
+        
+       
         
     }
 
     public void update() {
         
-        
-        
         for (Enemy enemy : enemies) {
             enemy.update();
-            
+        }
             
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastAttackTime >= attackInterval) {
                 AttackPattern(enemies); // Trigger a random enemy to shoot
                 lastAttackTime = currentTime; // Update the last attack time
-              }
-            try {
-              player.checkCollisionWithEnemies(enemy.colition);
-            } catch (IOException ex) {
-              Logger.getLogger(Stage.class.getName()).log(Level.SEVERE, null, ex);
-           }
-        }
-        for(Enemy enemy:enemies){
-            for(EnemyBullet enemyBullet:enemy.getEnemyBullet()){{
-                try {
-                    player.checkCollisionWithEnemies(enemyBullet.colition);
-                } catch (IOException ex) {
-                    Logger.getLogger(Stage.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-             }
-        }
-        
-        
-        if (keyHandler.fire && !lastFireState) {
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastFireTime >= fireCooldown) {
-                fireBullet(); // Fire at all enemies
-                lastFireTime = currentTime;
-            }
-        }
-        lastFireState = keyHandler.fire;
-       
-        Iterator<Bullet> iterator = bullets.iterator();
-        
-       
-        while (iterator.hasNext()) {
-            
-            Bullet bullet = iterator.next();
-            bullet.colition.y = bullet.y;
-            bullet.y -= bullet.speed;
-            
-          
-            for (Enemy enemy : enemies) {
-                if (enemy.colition != null && enemy.checkCollision(bullet.colition)) {
-                    enemies.remove(enemy);
-                    iterator.remove();
-                    
-                    break;
-                }
-                if(bullet.y<50){
-                    iterator.remove();
-                    break;
-                }
-               
-            }
-          
-        }
-       
+              } 
         }
     
     
 
-    private void fireBullet() {
-        Bullet bullet = new Bullet(player.x, player.y,20);
-        bullets.add(bullet);
-    }
+    
 
    
    
     public void draw(Graphics2D g2d) {
-    // Create a copy of the enemies list to avoid ConcurrentModificationException
+   
     List<Enemy> enemiesCopy = new ArrayList<>(enemies);
 
      
@@ -172,7 +114,8 @@ private void AttackPattern(List<Enemy> enemies) {
     }
 
     public void reset() {
-       this.player = player;
+       this.player1 = player1;
+       this.player2 = player2;
        enemies.clear();
         
     }

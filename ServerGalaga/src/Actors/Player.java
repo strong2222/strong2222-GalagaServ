@@ -16,6 +16,9 @@ import javax.imageio.ImageIO;
 import Main.GamePanel;
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -25,6 +28,7 @@ public final class Player extends Character implements Serializable {
 
     GamePanel gp;
     Key keyHandler;
+    public boolean IsFiring = false;
     public static boolean isAlive;
     transient BufferedImage playerImages;
     public int lives = 3;
@@ -35,13 +39,20 @@ public final class Player extends Character implements Serializable {
     private long blinkInterval = 3000;
     transient BufferedImage heart;
     static final int tileSize = 60;
-
+      public List<Bullet> bullets;
+      private long lastFireTime; 
+    private long fireCooldown = 500;
+    BufferedImage bulletImage;
+      
+      private boolean lastFireState = false;
+  
     public Player(GamePanel gp, Key keyhandler, int x, int y) {
         this.x = x;
         this.y = y;
         this.speed = 2;
         this.gp = gp;
         this.keyHandler = keyhandler;
+        bullets = new ArrayList<>();
 
         if (gp != null) {
             this.colition = new Rectangle(x, y, tileSize, tileSize - 10);
@@ -52,6 +63,7 @@ public final class Player extends Character implements Serializable {
         getImage();
 
     }
+    
 
     public void update() {
 
@@ -61,6 +73,8 @@ public final class Player extends Character implements Serializable {
         } else {
             isBlinking = false; // Stop blinking after the blink interval
         }
+        
+        if(keyHandler !=null){
         if (keyHandler.up == true) {
             y = y - speed;
             colition.y = y;
@@ -90,6 +104,16 @@ public final class Player extends Character implements Serializable {
                 Logger.getLogger(Player.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        if (keyHandler.fire && !lastFireState) {
+           
+                fireBullet();
+           
+        }
+       else{
+           IsFiring = false;
+       }
+        lastFireState = keyHandler.fire;
+        }
 
         if (x > gp.getWidth() - 50) {
             x = gp.getWidth() - 50;
@@ -103,13 +127,68 @@ public final class Player extends Character implements Serializable {
         if (y < 0) {
             y = 0;
         }
+        
+       
+       
+        bulletUpdate();
+    
 
     }
+    public void bulletDraw(Graphics2D g2d){
+        for(Bullet bullet:bullets){
+            g2d.drawImage(bulletImage,bullet.x,bullet.y,75,75,null);
+        }
+    }
+    public void bulletUpdate(){
+         
+        
+       Iterator<Bullet> iterator = bullets.iterator();
+        
+           while (iterator.hasNext()) {
+            
+            Bullet bullet = iterator.next();
+            bullet.colition.y = bullet.y;
+            bullet.y -= bullet.speed;
+            
+             if(bullet.y<50){
+                    iterator.remove();
+                    break;
+                }
+            
+           }
+    }
+    
+ 
+    public void checkEnemywithBullet(Enemy enemy){
+        
+        Iterator<Bullet> iterator = bullets.iterator();
+        
+       
+        while (iterator.hasNext()) {
+            
+            Bullet bullet = iterator.next();
+            
+          if (enemy.colition != null && enemy.checkCollision(bullet.colition)) {
+                    
+                    iterator.remove();
+                    
+                    break;
+                }
+                if(bullet.y<50){
+                    iterator.remove();
+                    break;
+                }
+               
+            }
+        }
+    
+    
 
     public void getImage() {
         try {
             heart = ImageIO.read(getClass().getResourceAsStream("/source/player/playerHearth.png"));
             playerImages = ImageIO.read(getClass().getResourceAsStream("/source/player/PlayerMain.png"));
+            bulletImage = ImageIO.read(getClass().getResourceAsStream("/source/player/sum.png"));
         } catch (IOException ex) {
             Logger.getLogger(Player.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -120,22 +199,30 @@ public final class Player extends Character implements Serializable {
         if (!isBlinking) {
             g2d.setColor(new Color(0, 0, 0, 0));
             g2d.drawImage(playerImages, x, y, tileSize, tileSize, null);
-
         }
+        
 
-        liveDraw(g2d);
+        
     }
+     public void fireBullet() {
+    long currentTime = System.currentTimeMillis();
+    if (currentTime - lastFireTime >= fireCooldown) {
+        IsFiring = true;
+        Bullet bullet = new Bullet(x, y, 20);
+        bullets.add(bullet);
+        lastFireTime = currentTime;
+    }
+}
 
     public void checkCollisionWithEnemies(Rectangle collision) throws IOException {
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - lastCollisionDetectionTime >= collisionCooldown) {
             if (collision != null && this.colition.intersects(collision)) {
-
-//                playerImages = ImageIO.read(getClass().getResourceAsStream("/source/player/explode.png"));
-                lives = lives - 1;
+               
                 lastCollisionDetectionTime = currentTime; // Update the last collision detection time
                 startBlinking();
+                 lives = lives - 1;
             }
         }
     }
@@ -158,18 +245,14 @@ public final class Player extends Character implements Serializable {
         }
     }
 
-    public void liveDraw(Graphics2D g2d) {
+    public void liveDraw(Graphics2D g2d,int x,int y) {
         for (int i = 0; i < this.lives; i++) {
-
-            g2d.drawImage(heart, i * 50, 0, 40, 40, null);
+            g2d.drawImage(heart, x+i*50, y, 40, 40, null);
         }
 
     }
-    public void setX(int x){
-        this.x=x;
-    }
-    public void setY(int y){
-        this.y = y;
+    public void resetBullet(){
+        IsFiring = false;
     }
 
     public void reset() {
@@ -180,5 +263,6 @@ public final class Player extends Character implements Serializable {
         getImage();
 
     }
+
 
 }
