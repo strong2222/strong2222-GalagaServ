@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package Stage;
 
 import Actors.Enemy;
@@ -19,11 +16,8 @@ public class Stage1 extends Stage{
        super(gp);
         initialize();
     }
-    public void update(){
-        super.update();
-        isCompleted();
-    }
-    public void initialize() {
+    
+       public void initialize() {
        
         int numEnemies = 5; 
 

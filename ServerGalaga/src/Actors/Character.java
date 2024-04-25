@@ -7,8 +7,8 @@ import java.awt.Rectangle;
 public class Character {
     
     public GamePanel gp;
-    public int x;
-    public int y;
+    public volatile int x;
+    public volatile int y;
     public int speed;
     public Rectangle colition ;
   

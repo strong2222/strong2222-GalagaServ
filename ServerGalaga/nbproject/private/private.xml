@@ -5,11 +5,11 @@
         <group>
             <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Main/GamePanel.java</file>
             <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Actors/Enemy.java</file>
-            <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Main/client.java</file>
             <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Main/GameServer.java</file>
+            <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Main/client.java</file>
+            <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Actors/Character.java</file>
             <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Actors/Player.java</file>
             <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Stage/Stage.java</file>
-            <file>file:/C:/Users/dell/Documents/NetBeansProjects/ServerGalaga/src/Stage/Stage1.java</file>
         </group>
     </open-files>
 </project-private>

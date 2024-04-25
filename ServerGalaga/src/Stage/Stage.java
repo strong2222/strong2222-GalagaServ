@@ -14,8 +14,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 
 public class Stage{
@@ -26,14 +25,14 @@ public class Stage{
     Player player1;
     Player player2;
     private boolean lastFireState = false;
-    Key keyHandler;
     
     
-    private long lastFireTime; 
+    
+    //private long lastFireTime; 
     private long fireCooldown = 500;
 
-    private long lastAttackTime; // Track the time of the last attack
-    private long attackInterval = 1000; // Interval between each random enemy attack in milliseconds
+    private long lastAttackTime; 
+    private long attackInterval = 1000;
     
      BufferedImage bulletImage;
      static final int tileSize = 60;
@@ -52,15 +51,14 @@ public class Stage{
         
     }
 
-    public void update() {
+    public void update(int randomIndex) {
         
-        for (Enemy enemy : enemies) {
-            enemy.update();
-        }
-            
+            for(Enemy enemy:enemies){
+                enemy.update();
+            }
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastAttackTime >= attackInterval) {
-                AttackPattern(enemies); // Trigger a random enemy to shoot
+                AttackPattern(randomIndex); // Trigger a random enemy to shoot
                 lastAttackTime = currentTime; // Update the last attack time
               } 
         }
@@ -80,22 +78,16 @@ public class Stage{
         enemy.draw(g2d);
     }
 
-    for (Bullet bullet : bullets) {
-        g2d.draw(bullet.colition);
-        g2d.drawImage(bulletImage, bullet.x, bullet.y - 10, tileSize, tileSize, null);
-    }
+   
 }
 
    
 
-private void AttackPattern(List<Enemy> enemies) {
+private void AttackPattern(int randomIndex) {
     if (!enemies.isEmpty()) {
-        // Select a random enemy from the list
-        Random random = new Random();
-        int randomIndex = random.nextInt(enemies.size());
+        
         Enemy attacker = enemies.get(randomIndex);
 
-       
         attacker.shoot();
     }
 }

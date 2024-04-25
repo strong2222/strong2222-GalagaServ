@@ -1,6 +1,5 @@
 package Main;
 
-import Actors.Bullet;
 import Actors.Enemy;
 import Actors.Player;
 import Stage.Stage;
@@ -26,7 +25,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import java.util.logging.Level;
@@ -51,7 +49,7 @@ public class GamePanel extends JPanel {
     public Player player2;
 
     int playerNumber = 1;
-    Socket ss;
+    Stage st = new Stage1(this);
 
     private int portNumber = 4444;
 
@@ -206,13 +204,21 @@ public class GamePanel extends JPanel {
 
     public void startGameLoop(SocketChannel socketChannel) throws IOException {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(1025); // Increased size to accommodate isFiring flag
+             ByteBuffer buffer = ByteBuffer.allocate(1025); // Increased size to accommodate isFiring flag
 
             double drawInterval = 1000 / fps;
             double nextDrawTime = System.currentTimeMillis() + drawInterval;
             Selector selector = Selector.open();
             socketChannel.configureBlocking(false);
             socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+
+            // Read the gameStarted flag from the server
+            ByteBuffer gameStartedBuffer = ByteBuffer.allocate(1);
+        while (socketChannel.read(gameStartedBuffer) == 0) {
+            // Wait for the gameStarted flag to be available
+        }
+        gameStartedBuffer.flip();
+        boolean gameStarted = gameStartedBuffer.get() != 0;
 
             while (!Thread.currentThread().isInterrupted() && player1.isAlive() && player2.isAlive()) {
                 long currentTime = System.currentTimeMillis();
@@ -237,13 +243,13 @@ public class GamePanel extends JPanel {
                     }
 
                     buffer.clear();
-                 
+                   // System.out.println(player1.IsFiring +" "+player2.IsFiring);
                     nextDrawTime += drawInterval;
 
                     selector.selectNow();
                     Set<SelectionKey> selectedKeys = selector.selectedKeys();
                     Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-
+                    if (gameStarted) {
                     while (keyIterator.hasNext()) {
                         SelectionKey key = keyIterator.next();
                         keyIterator.remove();
@@ -261,50 +267,51 @@ public class GamePanel extends JPanel {
                             } else {
                                 buffer.flip();
                                 if (playerNumber == 1) {
-                                    player2.x = buffer.getInt();
-                                    player2.y = buffer.getInt();
                                     if(buffer.remaining()>=4){
                                          int attacker = buffer.getInt();
+                                          st.update(attacker);
                                     System.out.println(attacker);
                                     }
+                                    player2.x = buffer.getInt();
+                                    player2.y = buffer.getInt();
+                                    
                                     player2.colition.y =player2.y;
                                     player2.colition.x = player2.x;
-                                    player2.update();
                                     boolean otherPlayerIsFiring = buffer.get() != 0; // Read other player's isFiring state
-                                   // System.out.println(otherPlayerIsFiring);
+                                   
                                     if (otherPlayerIsFiring) {
                                         player2.fireBullet();
                                         
                                         
                                     }
-                                      //player2.bulletUpdate();
+                                      player2.update();
                                     
                                 } else if (playerNumber == 2) {
-                                    player1.x = buffer.getInt();
-                                    player1.y = buffer.getInt();
-                                   if(buffer.remaining()>=4){
+                                     if(buffer.remaining()>=4){
                                          int attacker = buffer.getInt();
+                                          st.update(attacker);
                                     System.out.println(attacker);
                                     }
-                                     player1.colition.y =player1.y;
+                                    player1.x = buffer.getInt();
+                                    player1.y = buffer.getInt();
+                                    
+                                     
+                                    player1.colition.y =player1.y;
                                     player1.colition.x = player1.x;
-                                    player1.update();
                                    
                                     boolean otherPlayerIsFiring = buffer.get() != 0; // Read other player's isFiring state
                                     if (otherPlayerIsFiring) {
                                         player1.fireBullet();
-                                       
+                                       // Invoke fireBullet() for player1
                                     }
-                                     //player1.bulletUpdate();
+                                     player1.update();
                                 }
                                 buffer.clear();
                             }
                         }
                     }
-                    player1.checkEnemywithBullet(enemy);
-                    player2.checkEnemywithBullet(enemy);
+                   
                     colisionDetect();
-                    
                     repaint();
                 }
                 long remainingTime = (long) (nextDrawTime - System.currentTimeMillis());
@@ -312,11 +319,11 @@ public class GamePanel extends JPanel {
                     Thread.sleep(remainingTime);
                 }
             }
+}
         } catch (InterruptedException ex) {
             Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
 
     @Override
     public void paintComponent(Graphics g) {
@@ -338,7 +345,7 @@ public class GamePanel extends JPanel {
             
                 player1.liveDraw(g2d, 50, 0);
                 player2.liveDraw(g2d, 740, 0);
-                enemy.draw(g2d);
+                st.draw(g2d);
             
         }
 
@@ -354,14 +361,18 @@ public class GamePanel extends JPanel {
     public void colisionDetect(){
         
         try {
-            player1.checkCollisionWithEnemies(enemy.colition);
-            player2.checkCollisionWithEnemies(enemy.colition);
+            player1.checkCollisionWithEnemies(st.enemies);
+            player2.checkCollisionWithEnemies(st.enemies);
+           
+            player1.checkEnemywithBullet(st.enemies);
+            player2.checkEnemywithBullet(st.enemies);
         } catch (IOException ex) {
             Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         
     }
+    
 
     private void resetGame() {
 

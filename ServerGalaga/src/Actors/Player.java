@@ -28,7 +28,11 @@ public final class Player extends Character implements Serializable {
 
     GamePanel gp;
     Key keyHandler;
-    public boolean IsFiring = false;
+    public volatile boolean IsFiring = false;
+    //private boolean isFiring = false;
+private boolean lastFireState = false;
+private long lastFiredTime = 0;
+private final long firingDurationMs = 100;
     public static boolean isAlive;
     transient BufferedImage playerImages;
     public int lives = 3;
@@ -41,10 +45,10 @@ public final class Player extends Character implements Serializable {
     static final int tileSize = 60;
       public List<Bullet> bullets;
       private long lastFireTime; 
-    private long fireCooldown = 500;
+    private long fireCooldown = 300;
     BufferedImage bulletImage;
       
-      private boolean lastFireState = false;
+      //private boolean lastFireState = false;
   
     public Player(GamePanel gp, Key keyhandler, int x, int y) {
         this.x = x;
@@ -105,13 +109,17 @@ public final class Player extends Character implements Serializable {
             }
         }
         if (keyHandler.fire && !lastFireState) {
-           
-                fireBullet();
-           
+        IsFiring = true;
+        lastFiredTime = System.currentTimeMillis();
+        fireBullet();
+    }
+
+    if (IsFiring) {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastFiredTime >= firingDurationMs) {
+            IsFiring = false;
         }
-       else{
-           IsFiring = false;
-       }
+    }
         lastFireState = keyHandler.fire;
         }
 
@@ -152,22 +160,39 @@ public final class Player extends Character implements Serializable {
             
              if(bullet.y<50){
                     iterator.remove();
-                    break;
+                   
                 }
             
            }
     }
+    public synchronized void updatePosition(int x, int y, boolean isFiring) {
+        this.x = x;
+        this.y = y;
+        this.IsFiring = isFiring;
+    }
+
+    public synchronized int getX() {
+        return x;
+    }
+
+    public synchronized int getY() {
+        return y;
+    }
+
+    public synchronized boolean isFiring() {
+        return IsFiring;
+    }
     
  
-    public void checkEnemywithBullet(Enemy enemy){
+    public void checkEnemywithBullet(List<Enemy> enemies){
         
         Iterator<Bullet> iterator = bullets.iterator();
         
        
         while (iterator.hasNext()) {
             
-            Bullet bullet = iterator.next();
-            
+           Bullet bullet = iterator.next();
+          for(Enemy enemy:enemies){  
           if (enemy.colition != null && enemy.checkCollision(bullet.colition)) {
                     
                     iterator.remove();
@@ -180,6 +205,7 @@ public final class Player extends Character implements Serializable {
                 }
                
             }
+        }
         }
     
     
@@ -207,22 +233,24 @@ public final class Player extends Character implements Serializable {
      public void fireBullet() {
     long currentTime = System.currentTimeMillis();
     if (currentTime - lastFireTime >= fireCooldown) {
-        IsFiring = true;
+       
         Bullet bullet = new Bullet(x, y, 20);
         bullets.add(bullet);
         lastFireTime = currentTime;
     }
 }
 
-    public void checkCollisionWithEnemies(Rectangle collision) throws IOException {
+    public void checkCollisionWithEnemies(List<Enemy> enemies) throws IOException {
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - lastCollisionDetectionTime >= collisionCooldown) {
-            if (collision != null && this.colition.intersects(collision)) {
+            for(Enemy enemy:enemies){
+            if (enemy.colition != null && this.colition.intersects(enemy.colition)) {
                
                 lastCollisionDetectionTime = currentTime; // Update the last collision detection time
                 startBlinking();
                  lives = lives - 1;
+            }
             }
         }
     }
@@ -251,9 +279,7 @@ public final class Player extends Character implements Serializable {
         }
 
     }
-    public void resetBullet(){
-        IsFiring = false;
-    }
+
 
     public void reset() {
         this.x = 375;

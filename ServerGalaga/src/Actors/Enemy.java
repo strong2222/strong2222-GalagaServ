@@ -90,7 +90,7 @@ public class Enemy extends Character {
                 
                 bullet.y += bullet.speed;
                 bullet.colition.y += bullet.speed;
-                if (bullet.colition!=null&&bullet.y > gp.getHeight()) {
+                if (bullet.colition!=null&&bullet.y > 650) {
                     bullets.remove(i);
                    
 
@@ -99,14 +99,14 @@ public class Enemy extends Character {
             } 
             
 
-            if(this.colition != null){
-                colition.x = x;
-                colition.y = y;
-            }
+//            if(this.colition != null){
+//                colition.x = x;
+//                colition.y = y;
+//            }
             
             
                 
-                idleLoop();
+                //idleLoop();
                 
            
            
